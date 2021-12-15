@@ -1,0 +1,48 @@
+specVersion: 0.0.2
+description: GamersPro
+repository: https://github.com/gamerspro-io/gamerspro-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Land
+    network: {{chainName}}
+    source:
+      address: "{{contracts.Land.address}}"
+      abi: LandContract
+      startBlock: {{contracts.Land.receipt.blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - LandToken
+      abis:
+        - name: LandContract
+          file: ./abis/Land.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/land.ts
+  - kind: ethereum/contract
+    name: Asset
+    network: {{chainName}}
+    source:
+      address: "{{contracts.Asset.address}}"
+      abi: AssetContract
+      startBlock: {{contracts.Asset.receipt.blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - AssetToken
+      abis:
+        - name: AssetContract
+          file: ./abis/Asset.json
+      eventHandlers:
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+      file: ./src/asset.ts

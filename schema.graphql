@@ -1,0 +1,65 @@
+type All @entity {
+  id: ID! # "all"
+
+  numLands: BigInt!
+  numAssets: BigInt!
+  numAssetCollections: BigInt!
+  numLandOwners: BigInt!
+  numAssetOwners: BigInt!
+  lastUpdate: BigInt!
+}
+
+type LandToken @entity {
+  id: ID! # tokenId
+
+  owner: Owner!
+  x: Int!
+  y: Int!
+  tokenURI: String!
+  timestamp: BigInt!
+  # topCornerId: Int # null = not set yet, waiting for LandSale PurchaseEvent, -1 = 1x1 , else id of the group whose is the id of the top corner land
+}
+
+type AssetCollection @entity {
+  id: ID! # tokenId
+
+  tokenURI: String!
+  timestamp: BigInt!
+  supply: BigInt! # this include token extracted as EIP721 tokens
+  # numOwners: BigInt! # TODO
+
+  tokens: [AssetToken!]! @derivedFrom(field: "collection")
+  numTokenTypes: BigInt!
+}
+
+type AssetToken @entity {
+  id: ID! # tokenId
+
+  collection: AssetCollection!
+  timestamp: BigInt!
+  supply: BigInt!
+  # numOwners: BigInt! # TODO
+  rarity: Int!# TODO move into collection
+  isNFT: Boolean
+  owner: Owner # only set for dual EIP-721/ EIP-1155 tokens
+
+  owners: [AssetTokenOwned!]! @derivedFrom(field: "token")
+}
+
+type AssetTokenOwned @entity {
+  id: ID! # owner_tokenId
+  owner: Owner!
+  token: AssetToken!
+
+  quantity: BigInt!
+}
+
+type Owner @entity {
+  id: ID! # address
+
+  assetTokens: [AssetTokenOwned!]! @derivedFrom(field: "owner")
+  landTokens: [LandToken!]! @derivedFrom(field: "owner")
+  numAssets: BigInt!
+  numLands: BigInt!
+  timestamp: BigInt!
+}

@@ -1,0 +1,1 @@
+subgraph for gamerspro tokens
