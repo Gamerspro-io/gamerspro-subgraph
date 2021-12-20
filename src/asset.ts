@@ -1,10 +1,16 @@
-import { store, Address, Bytes, EthereumValue, BigInt, BigDecimal } from "@graphprotocol/graph-ts";
-import { TransferSingle, TransferBatch, AssetContract } from "../generated/Asset/AssetContract";
-import { AssetToken, Owner, AssetCollection, All } from "../generated/schema";
-
-import { log } from "@graphprotocol/graph-ts";
-
-import { AssetTokenOwned } from "../generated/schema";
+import { Address, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts";
+import {
+  AssetContract,
+  TransferBatch,
+  TransferSingle,
+} from "../generated/Asset/AssetContract";
+import {
+  All,
+  AssetCollection,
+  AssetToken,
+  AssetTokenOwned,
+  Owner,
+} from "../generated/schema";
 
 let ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
@@ -15,13 +21,27 @@ export function handleTransferBatch(event: TransferBatch): void {
   let values = event.params.values;
   let ids = event.params.ids;
   for (let i = 0; i < event.params.ids.length; i++) {
-    handleTransfer(event.block.timestamp, event.address, event.params.from, event.params.to, ids[i], values[i]);
+    handleTransfer(
+      event.block.timestamp,
+      event.address,
+      event.params.from,
+      event.params.to,
+      ids[i],
+      values[i]
+    );
   }
 }
 
 export function handleTransferSingle(event: TransferSingle): void {
   let tokenId = event.params.id;
-  handleTransfer(event.block.timestamp, event.address, event.params.from, event.params.to, tokenId, event.params.value);
+  handleTransfer(
+    event.block.timestamp,
+    event.address,
+    event.params.from,
+    event.params.to,
+    tokenId,
+    event.params.value
+  );
 }
 
 function handleTransfer(
@@ -40,14 +60,14 @@ function handleTransfer(
   // ---------------------------------------------------------------------------------------------------------------
   // - STATS SETUP
   // ---------------------------------------------------------------------------------------------------------------
-  let all = All.load('all');
+  let all = All.load("all");
   if (all == null) {
-      all = new All('all');
-      all.numLands = ZERO;
-      all.numAssets = ZERO;
-      all.numAssetCollections = ZERO;
-      all.numLandOwners = ZERO;
-      all.numAssetOwners = ZERO;
+    all = new All("all");
+    all.numLands = ZERO;
+    all.numAssets = ZERO;
+    all.numAssetCollections = ZERO;
+    all.numLandOwners = ZERO;
+    all.numAssetOwners = ZERO;
   }
   all.lastUpdate = timestamp;
 
@@ -88,7 +108,6 @@ function handleTransfer(
       assetToken.rarity = -1; // SHOULD NEVER REACH THERE
     }
 
-
     collection = AssetCollection.load(assetToken.collection);
     if (collection == null) {
       collection = new AssetCollection(assetToken.collection);
@@ -97,7 +116,10 @@ function handleTransfer(
       if (!metadataURI.reverted) {
         collection.tokenURI = metadataURI.value;
       } else {
-        log.error("error tokenURI from {id} {collectionId}", [id, collectionId.toString()]);
+        log.error("error tokenURI from {id} {collectionId}", [
+          id,
+          collectionId.toString(),
+        ]);
         collection.tokenURI = "error"; // SHOULD NEVER REACH THERE
       }
       collection.timestamp = timestamp;
@@ -122,7 +144,7 @@ function handleTransfer(
         all.numAssetOwners = all.numAssetOwners.minus(ONE);
       }
 
-      let assetTokenOwned = AssetTokenOwned.load(from + '_' + id);
+      let assetTokenOwned = AssetTokenOwned.load(from + "_" + id);
       if (assetTokenOwned != null) {
         assetTokenOwned.quantity = assetTokenOwned.quantity.minus(quantity);
         if (assetTokenOwned.quantity.le(ZERO)) {
@@ -139,7 +161,6 @@ function handleTransfer(
     assetToken.supply = assetToken.supply.minus(quantity);
     all.numAssets = all.numAssets.minus(quantity);
   }
-
 
   // ---------------------------------------------------------------------------------------------------------------
   // - TO OTHER ACCOUNTS : TRANSFER OR MINT
@@ -161,14 +182,14 @@ function handleTransfer(
     assetToken.supply = assetToken.supply.plus(quantity);
     all.numAssets = all.numAssets.plus(quantity);
 
-    let assetTokenOwned = AssetTokenOwned.load(to + '_' + id);
+    let assetTokenOwned = AssetTokenOwned.load(to + "_" + id);
     if (assetTokenOwned == null) {
-      assetTokenOwned = new AssetTokenOwned(to + '_' + id);
+      assetTokenOwned = new AssetTokenOwned(to + "_" + id);
       assetTokenOwned.owner = newOwner.id;
       assetTokenOwned.token = id;
       assetTokenOwned.quantity = ZERO;
     }
-    assetTokenOwned.quantity =  assetTokenOwned.quantity.plus(quantity);
+    assetTokenOwned.quantity = assetTokenOwned.quantity.plus(quantity);
     assetTokenOwned.save();
 
     newOwner.numAssets = newOwner.numAssets.plus(quantity);

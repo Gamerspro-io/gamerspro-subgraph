@@ -6,14 +6,14 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Land
-    network: {{chainName}}
+    network: matic
     source:
-      address: "{{contracts.Land.address}}"
+      address: "0x4cebf3cb0da34535445ecdd53d27877f9ab6ee97"
       abi: LandContract
-      startBlock: {{contracts.Land.receipt.blockNumber}}
+      startBlock: 22753145
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - LandToken
@@ -24,25 +24,3 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/land.ts
-  - kind: ethereum/contract
-    name: Asset
-    network: {{chainName}}
-    source:
-      address: "{{contracts.Asset.address}}"
-      abi: AssetContract
-      startBlock: {{contracts.Asset.receipt.blockNumber}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      entities:
-        - AssetToken
-      abis:
-        - name: AssetContract
-          file: ./abis/Asset.json
-      eventHandlers:
-        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleTransferSingle
-        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
-          handler: handleTransferBatch
-      file: ./src/asset.ts

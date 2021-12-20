@@ -1,8 +1,6 @@
-import { store, Address, Bytes, EthereumValue, BigInt, BigDecimal } from "@graphprotocol/graph-ts";
-import { Transfer, LandContract } from "../generated/Land/LandContract";
-import { LandToken, Owner, All } from "../generated/schema";
-
-import { log } from "@graphprotocol/graph-ts";
+import { BigInt, log, store } from "@graphprotocol/graph-ts";
+import { LandContract, Transfer } from "../generated/Land/LandContract";
+import { All, LandToken, Owner } from "../generated/schema";
 
 let ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
@@ -17,14 +15,14 @@ export function handleTransfer(event: Transfer): void {
   let to = event.params._to.toHex();
   let contract = LandContract.bind(event.address);
 
-  let all = All.load('all');
+  let all = All.load("all");
   if (all == null) {
-      all = new All('all');
-      all.numLands = ZERO;
-      all.numAssets = ZERO;
-      all.numAssetCollections = ZERO;
-      all.numLandOwners = ZERO;
-      all.numAssetOwners = ZERO;
+    all = new All("all");
+    all.numLands = ZERO;
+    all.numAssets = ZERO;
+    all.numAssetCollections = ZERO;
+    all.numLandOwners = ZERO;
+    all.numAssetOwners = ZERO;
   }
   all.lastUpdate = event.block.timestamp;
 
@@ -41,7 +39,6 @@ export function handleTransfer(event: Transfer): void {
     }
     all.numLands = all.numLands.minus(ONE);
   }
-
 
   if (to !== ADDRESS_ZERO) {
     let newOwner = Owner.load(to);
